@@ -8,18 +8,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Seller {
+model User {
   id           String    @id @default(uuid()) @unique
-  username     String    @unique
-  walletAddress String   @unique
+  walletAddress String?   @unique
+  blink        UserBlink?
+  username     String? @unique
+  blinkCreated Boolean @default(false)
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  accounts      Account[]
+  // sessions      Session[]
   products     Product[] 
-  blink        SellerBlink?
-  blinkCreated Boolean @default(false)
-  Payments ProductPurchaseTransaction[]
   order   Order[]
-
   @@index([walletAddress])
   @@index([username])
 }
@@ -33,15 +37,14 @@ model Product {
   imageUrl    String
   price       String //price
   stock       String //stock limit
-  sellerId    String   
-  seller      Seller   @relation(fields: [sellerId], references: [walletAddress]) 
+  userId    String   
+  user      User   @relation(fields: [userId], references: [walletAddress]) 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  purchase  ProductPurchaseTransaction[]
   order     Order[]
 
-  @@index([sellerId])
+  @@index([userId])
 
 }
 
@@ -55,19 +58,19 @@ model Order{
   ZipCode       String
   orderstatus    OrderStatus @default(PROCESSING)
   buyerWallet  String 
-  user        User   @relation(fields: [buyerWallet],references: [userWallet])
+  customer        Customer   @relation(fields: [buyerWallet],references: [customerWallet])
 
   productId  String
   product   Product  @relation(fields: [productId],references: [id])
 
-  sellerId String
-  seller   Seller   @relation(fields: [sellerId],references: [walletAddress])
+  userId String
+  user   User   @relation(fields: [userId],references: [walletAddress])
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
-model SellerBlink {
+model UserBlink {
   id          String  @id @default(uuid())
   title       String
   icon        String  
@@ -75,47 +78,67 @@ model SellerBlink {
   label String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  sellerWallet  String    @unique
-  user        Seller    @relation(fields: [sellerWallet], references: [walletAddress])
+  userWallet  String    @unique
+  Customer        User    @relation(fields: [userWallet], references: [walletAddress])
 
-  @@index([sellerWallet],name:"user_wallet_address")
+  @@index([userWallet],name:"Customer_wallet_address")
   @@index([id])
 }
 
-model ProductPurchaseTransaction{
+
+model Customer{
   id String @id @default(uuid())
-  amount String 
-  referenceKey String //finding the transaction based on this
-  transasctionId  String? //if purchase successfull let store the transasctionId
-  status Status  @default(PENDING)
+  customerWallet String? @unique 
+  emailAddress   String  @unique
+  name String
+  orders  Order[]
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-
-  sellerWallet String
-  seller  Seller  @relation(fields: [sellerWallet],references: [walletAddress])
-
-  productId  String
-  product Product @relation(fields: [productId],references: [id])
-
-  orderedWallet String //who made the purchase
-  user       User    @relation(fields: [orderedWallet],references: [userWallet])
-  
-  @@index([referenceKey])
-}
-
-model User{
-  id String @id @default(uuid())
-  userWallet String @unique
-  name String 
-  orders  Order[]
-  emailAddress   String  @unique
-
-  purchases     ProductPurchaseTransaction[]
-
-  @@index([userWallet])
+  @@index([customerWallet])
 }
 
 
+// model Session {
+//   id           String   @id @default(cuid())
+//   sessionToken String   @unique @map("session_token")
+//   userrId       String   @map("user_id")
+//   expires      DateTime
+//   user         User     @relation(fields: [userrId], references: [id], onDelete: Cascade)
+ 
+//   @@map("sessions")
+// }
+
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String  @map("user_id")
+  type               String
+  provider           String
+  providerAccountId  String  @map("provider_account_id")
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String? 
+  id_token           String? @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+ 
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
 
 enum Status {
   PENDING

@@ -139,18 +139,18 @@ export const POST = async (req: Request) => {
           );
         }
 
-        const user = await prisma.user.findUnique({
+        const user = await prisma.customer.findUnique({
           where: {
-            userWallet: body.account,
+            customerWallet: body.account,
           },
         });
 
         if (!user) {
-          await prisma.user.create({
+          await prisma.customer.create({
             data: {
               emailAddress: email,
               name,
-              userWallet: body.account,
+              customerWallet: body.account,
             },
           });
         }
@@ -159,7 +159,7 @@ export const POST = async (req: Request) => {
             id: productid,
           },
           include: {
-            seller: true,
+            user: true,
           },
         });
 
@@ -177,7 +177,7 @@ export const POST = async (req: Request) => {
             productId: productid,
             orderstatus: "PROCESSING",
             id: uuid,
-            sellerId: productDetails.sellerId,
+            userId: productDetails.userId,
           },
         });
 

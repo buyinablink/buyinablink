@@ -56,7 +56,7 @@ export const POST = async (
         id: params.productid,
       },
       include: {
-        seller: true,
+        user: true,
       },
     });
     if (!product) {
@@ -108,7 +108,7 @@ export const POST = async (
           new anchor.BN(Number(product.price) * LAMPORTS_PER_SOL)
         )
         .accountsPartial({
-          seller: new PublicKey(product.seller.walletAddress),
+          seller: new PublicKey(product.user.walletAddress as string),
           user: new PublicKey(body.account),
           order: orderPda,
           orderVault,

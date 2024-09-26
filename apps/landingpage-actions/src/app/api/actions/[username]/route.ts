@@ -29,7 +29,7 @@ export const GET = async (
   }
 ) => {
   try {
-    const seller = await prisma.seller.findUnique({
+    const seller = await prisma.user.findUnique({
       where: {
         username: params.username,
       },
@@ -88,7 +88,7 @@ export const POST = async (req: Request, { params }: any) => {
 
     if (!route) return;
 
-    const seller = await prisma.seller.findUnique({
+    const seller = await prisma.user.findUnique({
       where: {
         username: params.username,
       },
@@ -127,7 +127,7 @@ export const POST = async (req: Request, { params }: any) => {
     /// fetch his products from the db
     const products = await prisma.product.findMany({
       where: {
-        sellerId: seller.walletAddress,
+        userId: seller.walletAddress as string,
       },
     });
 
