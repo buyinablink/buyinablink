@@ -5,13 +5,19 @@ import {
   ACTIONS_CORS_HEADERS,
   createPostResponse,
 } from "@solana/actions";
-import { LAMPORTS_PER_SOL, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
 import { v4 as uuidv4 } from "uuid";
 import { getConnection } from "src/lib/constants";
-import { trimUuidToHalf } from "src/lib/helpers";
 import prisma from "@repo/db/client";
-import { program } from "src/anchor/setup";
+import { program } from "anchor/setup";
+import { trimUuidToHalf } from "src/lib/helpers";
 
 export const OPTIONS = () => {
   return Response.json(null, {
@@ -56,7 +62,7 @@ export const POST = async (
         id: params.productid,
       },
       include: {
-        user: true,
+        seller: true,
       },
     });
     if (!product) {
@@ -87,7 +93,7 @@ export const POST = async (
 
     let anchorInstruction;
     console.log("here 1");
-    const orderPda = PublicKey.findProgramAddressSync(
+    let orderPda = PublicKey.findProgramAddressSync(
       [
         Buffer.from("order"),
         new PublicKey(body.account).toBuffer(),
@@ -97,7 +103,7 @@ export const POST = async (
     )[0];
     console.log("here 2");
 
-    const orderVault = PublicKey.findProgramAddressSync(
+    let orderVault = PublicKey.findProgramAddressSync(
       [Buffer.from("orderVault"), orderPda.toBuffer()],
       program.programId
     )[0];
@@ -108,7 +114,7 @@ export const POST = async (
           new anchor.BN(Number(product.price) * LAMPORTS_PER_SOL)
         )
         .accountsPartial({
-          seller: new PublicKey(product.user.walletAddress as string),
+          seller: new PublicKey(product.seller.walletAddress),
           user: new PublicKey(body.account),
           order: orderPda,
           orderVault,

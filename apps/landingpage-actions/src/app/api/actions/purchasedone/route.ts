@@ -1,3 +1,4 @@
+import prisma from "@repo/db/client";
 import {
   ActionError,
   ACTIONS_CORS_HEADERS,
@@ -6,10 +7,9 @@ import {
 } from "@solana/actions";
 import { PublicKey } from "@solana/web3.js";
 
+import { program, programId } from "anchor/setup";
 import { getConnection } from "src/lib/constants";
 import { trimUuidToHalf } from "src/lib/helpers";
-import { program, programId } from "src/anchor/setup";
-import prisma from "@repo/db/client";
 
 export const GET = async (req: Request) => {
   return Response.json({ message: "Method not supported" } as ActionError, {
@@ -139,18 +139,18 @@ export const POST = async (req: Request) => {
           );
         }
 
-        const user = await prisma.customer.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
-            customerWallet: body.account,
+            userWallet: body.account,
           },
         });
 
         if (!user) {
-          await prisma.customer.create({
+          await prisma.user.create({
             data: {
               emailAddress: email,
               name,
-              customerWallet: body.account,
+              userWallet: body.account,
             },
           });
         }
@@ -159,7 +159,7 @@ export const POST = async (req: Request) => {
             id: productid,
           },
           include: {
-            user: true,
+            seller: true,
           },
         });
 
@@ -177,7 +177,7 @@ export const POST = async (req: Request) => {
             productId: productid,
             orderstatus: "PROCESSING",
             id: uuid,
-            userId: productDetails.userId,
+            sellerId: productDetails.sellerId,
           },
         });
 

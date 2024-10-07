@@ -6,13 +6,11 @@ const loginRoute = "/login";
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.AUTH_SECRET });
-
   const { pathname } = req.nextUrl;
 
   if (token && pathname === loginRoute) {
     return NextResponse.redirect(new URL("/", req.url));
   }
-
   if (!token && protectedRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(new URL(loginRoute, req.url));
   }
@@ -23,12 +21,11 @@ export async function middleware(req: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match all request paths including the login route except for:
      * - api/auth (NextAuth API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Also exclude the login route from middleware to prevent redirect loops
      */
     "/((?!login|api/auth|_next/static|_next/image|favicon.ico).*)",
   ],

@@ -1,4 +1,3 @@
-import { trimUuidToHalf } from "src/lib/helpers";
 import {
   ActionError,
   ActionPostRequest,
@@ -9,7 +8,8 @@ import {
 import { PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { getConnection } from "src/lib/constants";
 import prisma from "@repo/db/client";
-import { program } from "src/anchor/setup";
+import { program } from "anchor/setup";
+import { trimUuidToHalf } from "src/lib/helpers";
 
 const headers = createActionHeaders();
 
@@ -63,9 +63,9 @@ export const POST = async (
         }
       );
     }
-    const message = trimUuidToHalf(order.id);
+    let message = trimUuidToHalf(order.id);
     console.log("here 1");
-    const orderPda = PublicKey.findProgramAddressSync(
+    let orderPda = PublicKey.findProgramAddressSync(
       [
         Buffer.from("order"),
         new PublicKey(body.account).toBuffer(),
@@ -75,7 +75,7 @@ export const POST = async (
     )[0];
     console.log("here 2");
 
-    const orderVault = PublicKey.findProgramAddressSync(
+    let orderVault = PublicKey.findProgramAddressSync(
       [Buffer.from("orderVault"), orderPda.toBuffer()],
       program.programId
     )[0];

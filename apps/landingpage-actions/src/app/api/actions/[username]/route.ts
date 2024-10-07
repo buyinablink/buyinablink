@@ -1,3 +1,4 @@
+import prisma from "@repo/db/client";
 import {
   ActionError,
   ActionGetResponse,
@@ -14,8 +15,6 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-
-import prisma from "@repo/db/client";
 import { getConnection } from "src/lib/constants";
 
 export const GET = async (
@@ -29,7 +28,7 @@ export const GET = async (
   }
 ) => {
   try {
-    const seller = await prisma.user.findUnique({
+    const seller = await prisma.seller.findUnique({
       where: {
         username: params.username,
       },
@@ -88,7 +87,7 @@ export const POST = async (req: Request, { params }: any) => {
 
     if (!route) return;
 
-    const seller = await prisma.user.findUnique({
+    const seller = await prisma.seller.findUnique({
       where: {
         username: params.username,
       },
@@ -127,7 +126,7 @@ export const POST = async (req: Request, { params }: any) => {
     /// fetch his products from the db
     const products = await prisma.product.findMany({
       where: {
-        userId: seller.walletAddress as string,
+        sellerId: seller.walletAddress,
       },
     });
 

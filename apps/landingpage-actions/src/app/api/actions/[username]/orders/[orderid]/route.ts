@@ -7,15 +7,14 @@ import {
   MEMO_PROGRAM_ID,
   NextActionLink,
 } from "@solana/actions";
-import { getConnection } from "src/lib/constants";
 import {
   ComputeBudgetProgram,
   PublicKey,
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
+import { getConnection } from "src/lib/constants";
 import prisma from "@repo/db/client";
-
 const headers = createActionHeaders();
 
 export const OPTIONS = () => {
@@ -41,6 +40,7 @@ export const POST = async (
   }
 ) => {
   try {
+    const url = new URL(req.url);
     const body: ActionPostRequest = await req.json();
 
     let account: PublicKey;
@@ -77,7 +77,7 @@ export const POST = async (
       );
     }
 
-    const next: NextActionLink = {
+    let next: NextActionLink = {
       type: "inline",
       action: {
         icon: order.product.imageUrl,

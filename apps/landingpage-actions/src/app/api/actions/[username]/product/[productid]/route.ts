@@ -12,10 +12,8 @@ import {
   Transaction,
   TransactionInstruction,
 } from "@solana/web3.js";
-
 import { getConnection } from "src/lib/constants";
 import prisma from "@repo/db/client";
-
 export const OPTIONS = () => {
   return Response.json(null, {
     headers: ACTIONS_CORS_HEADERS,
